@@ -1,0 +1,64 @@
+{
+  "_metadata": {
+    "generated_at": "2026-05-06T16:52:18+00:00",
+    "comment": "Regenerate via tests/harness/regression.py --update-baseline."
+  },
+  "cells": {
+    "dark_highlights_t128": {
+      "wall_clock_s": 3.2688,
+      "peak_mem_mib": 184.02,
+      "rgb_l1_mean": 2.1785,
+      "lab_de76_mean": 1.3494,
+      "lab_de76_p95": 1.544
+    },
+    "gradient_t128": {
+      "wall_clock_s": 3.2209,
+      "peak_mem_mib": 184.01,
+      "rgb_l1_mean": 3.6035,
+      "lab_de76_mean": 3.0002,
+      "lab_de76_p95": 10.3216
+    },
+    "snow_leopard_t128": {
+      "wall_clock_s": 4.2836,
+      "peak_mem_mib": 183.97,
+      "rgb_l1_mean": 11.1706,
+      "lab_de76_mean": 6.0637,
+      "lab_de76_p95": 17.5884
+    },
+    "painterly_t128": {
+      "wall_clock_s": 4.6925,
+      "peak_mem_mib": 184.01,
+      "rgb_l1_mean": 5.5047,
+      "lab_de76_mean": 4.5842,
+      "lab_de76_p95": 12.2878
+    },
+    "painterly_t256": {
+      "wall_clock_s": 20.0588,
+      "peak_mem_mib": 736.01,
+      "rgb_l1_mean": 5.2976,
+      "lab_de76_mean": 4.6704,
+      "lab_de76_p95": 12.2631
+    },
+    "painterly_t128_kc": {
+      "wall_clock_s": 5.4355,
+      "peak_mem_mib": 184.01,
+      "rgb_l1_mean": 5.254,
+      "lab_de76_mean": 4.7025,
+      "lab_de76_p95": 11.4018
+    },
+    "painterly_t128_c64": {
+      "wall_clock_s": 6.8126,
+      "peak_mem_mib": 184.01,
+      "rgb_l1_mean": 4.7243,
+      "lab_de76_mean": 4.039,
+      "lab_de76_p95": 10.8907
+    },
+    "painterly_t128_maxc": {
+      "wall_clock_s": 2.2933,
+      "peak_mem_mib": 184.01,
+      "rgb_l1_mean": 4.8485,
+      "lab_de76_mean": 4.3828,
+      "lab_de76_p95": 12.2223
+    }
+  }
+}

@@ -29,3 +29,11 @@ htmlcov/
 # Project-specific
 tests/upstream/
 tests/harness/output/
+tests/harness/cache/
+tests/harness/regression_local.py
+
+# Test images sourced from the web - not redistributable
+tests/images/UI.jpg
+tests/images/face_texture.png
+tests/images/jacket.jpg
+tests/images/vinyl.jpg
