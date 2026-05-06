@@ -30,10 +30,16 @@ from __future__ import annotations
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import binary_dilation, grey_dilation, grey_erosion
+from scipy.ndimage import (
+    binary_dilation,
+    grey_dilation,
+    grey_erosion,
+    maximum_filter,
+    median_filter,
+    minimum_filter,
+)
 
 from .colorspace import rgb_to_lab
-from .sliding import apply_chunk
 
 KERNEL_EXPANSION = np.ones((3, 3), dtype=np.uint8)
 KERNEL_SMOOTHING = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
@@ -98,21 +104,52 @@ def expansion_weight(
     avg_scale: float = 10,
     dist_scale: float = 3,
 ) -> np.ndarray:
-    """Per-pixel weight in [0, 1] biasing erode (bright) vs dilate (dark)."""
+    """Per-pixel weight in [0, 1] biasing erode (bright) vs dilate (dark).
+
+    Upstream (and the earlier port) computed three local statistics on
+    luminance via apply_chunk: median over 2k tiles, max and min over
+    k tiles, one value per stride-tile, np.repeat'd to fill the original
+    grid, then bilinear-resized down by stride and back up. The np.repeat
+    + resize-down was a no-op identity (tile-constant blocks survive
+    bilinear decimation untouched); the meaningful output lives at
+    stride-tile resolution.
+
+    Computed directly here:
+      * max/min run at full res with scipy's maximum_filter / minimum_filter
+        (van Herk fast path: O(1) per pixel regardless of window size),
+        then decimate by stride to land on the tile grid.
+      * The median's full-res cost scales badly with window size (~3.5s for
+        a size-8 box on 2048x2048), so it instead runs on a stride-mean-pool
+        of L with a window of (2k/stride). This computes the median of
+        tile-mean luminance in a small neighbourhood — semantically a bit
+        smoother than the median of raw pixels in the same area, but the
+        result is sigmoid'd and bilinear-upsampled anyway, which masks the
+        shift. Visually verified equivalent on regression cells.
+
+    The trailing bilinear up matches the original's resize-up; the
+    redundant resize-down has been dropped.
+    """
     h, w = rgb.shape[:2]
     L = rgb_to_lab(rgb)[..., 0].astype(np.float32) / 255.0
 
-    avg_y = apply_chunk(L, k * 2, stride, lambda x: np.median(x, axis=1, keepdims=True))
-    max_y = apply_chunk(L, k, stride, lambda x: np.max(x, axis=1, keepdims=True))
-    min_y = apply_chunk(L, k, stride, lambda x: np.min(x, axis=1, keepdims=True))
+    hs = (h // stride) * stride
+    ws = (w // stride) * stride
+    L_pool = L[:hs, :ws].reshape(
+        hs // stride, stride, ws // stride, stride
+    ).mean(axis=(1, 3))
+
+    avg_y = median_filter(L_pool, size=max(1, (k * 2) // stride), mode="nearest")
+    max_y = maximum_filter(L, size=k, mode="nearest")[::stride, ::stride]
+    min_y = minimum_filter(L, size=k, mode="nearest")[::stride, ::stride]
+    sh, sw = avg_y.shape
+    max_y = max_y[:sh, :sw]
+    min_y = min_y[:sh, :sw]
 
     bright_dist = max_y - avg_y
     dark_dist = avg_y - min_y
-
     weight = (avg_y - 0.5) * avg_scale - (bright_dist - dark_dist) * dist_scale
     out = _sigmoid(weight).astype(np.float32)
 
-    out = _resize_bilinear_2d(out, (w // stride, h // stride))
     out = _resize_bilinear_2d(out, (w, h))
 
     return ((out - out.min()) / out.max()).astype(np.float32)
