@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Claude Code local data
+.claude/
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Project-specific
+tests/upstream/
+tests/harness/output/
