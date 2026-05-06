@@ -34,7 +34,7 @@ from PIL import Image, ImageDraw
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 UPSTREAM_PYTHON = PROJECT_ROOT / "tests" / "upstream" / ".venv" / "bin" / "python"
 UPSTREAM_RUNNER = Path(__file__).parent / "_upstream_runner.py"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "tests" / "harness" / "output"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "tests" / "harness" / "output" / "stage"
 
 STAGES = [
     "lab",
@@ -298,7 +298,7 @@ def main() -> int:
     }
 
     output_path = args.output or (
-        DEFAULT_OUTPUT_DIR / f"{args.input.stem}_stage_{args.stage}.png"
+        DEFAULT_OUTPUT_DIR / f"{args.input.stem}_{args.stage}.png"
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

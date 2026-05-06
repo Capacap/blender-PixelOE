@@ -66,6 +66,11 @@ MATRIX: list[dict] = [
     _cell("painterly_t128_kc", "painterly_portrait.png", mode="k-centroid"),
     _cell("painterly_t128_c64", "painterly_portrait.png", colors=64),
     _cell("painterly_t128_maxc", "painterly_portrait.png", color_quant_method="maxcover"),
+    _cell("impressionism_lady_t128", "impressionism_lady.png"),
+    _cell("moon_face_t128", "realistic_surreal_moon_face.png"),
+    _cell("stylized_dark_t128", "stylized_dark_portrait.png"),
+    _cell("stylized_man_t128", "stylized_man_portrait.png"),
+    _cell("toon_punk_t128", "toon_punk_girl.png"),
 ]
 
 

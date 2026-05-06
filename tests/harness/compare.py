@@ -24,7 +24,7 @@ from PIL import Image, ImageDraw
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 UPSTREAM_PYTHON = PROJECT_ROOT / "tests" / "upstream" / ".venv" / "bin" / "python"
 UPSTREAM_RUNNER = Path(__file__).parent / "_upstream_runner.py"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "tests" / "harness" / "output"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "tests" / "harness" / "output" / "compare"
 
 
 def run_upstream(input_path: Path, settings: dict) -> np.ndarray:
