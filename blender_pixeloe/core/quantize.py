@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import numpy as np
 from PIL import Image
+from scipy.cluster.vq import vq
 
 _KMEANS_MAX_ITER = 32
 _KMEANS_EPS = 1.0
@@ -53,11 +54,20 @@ _KMEANS_SEED = 0
 
 
 def _assign(pixels: np.ndarray, centers: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Returns (labels, squared distance to assigned centroid)."""
-    d2 = ((pixels[:, None, :] - centers[None, :, :]) ** 2).sum(axis=2)
-    labels = np.argmin(d2, axis=1).astype(np.int64)
-    chosen = d2[np.arange(pixels.shape[0]), labels]
-    return labels, chosen
+    """Returns (labels, squared distance to assigned centroid).
+
+    Backed by scipy.cluster.vq.vq, which does the BLAS-friendly expansion
+    ``||p||^2 - 2 p.c + ||c||^2`` instead of materialising the full
+    ``(N, K, 3)`` broadcast. It expects contiguous float32 inputs and
+    returns Euclidean (not squared) distances, so we cast in and square
+    on the way out. Float32 is comfortably precise enough for 8-bit RGB
+    values (0..255); the kmeans means accumulator stays float64.
+    """
+    obs = np.ascontiguousarray(pixels, dtype=np.float32)
+    book = np.ascontiguousarray(centers, dtype=np.float32)
+    labels, dist = vq(obs, book)
+    chosen = dist.astype(np.float64) ** 2
+    return labels.astype(np.int64), chosen
 
 
 def _generate_random_centers(
