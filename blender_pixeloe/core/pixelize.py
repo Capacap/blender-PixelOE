@@ -79,13 +79,25 @@ def pixelize(
         )
         weight = np.abs(w_map * 2 - 1)
 
-    if color_matching:
-        rgb = match_color(rgb, org_rgb)
-
     if mode == "contrast":
         rgb_sm = contrast_based_downscale(rgb, target_size)
     else:
         rgb_sm = k_centroid_downscale(rgb, target_size)
+
+    # match_color runs after decimation. find_pixel and k-centroid both pick
+    # tile pixels by relative L ordering, which is invariant under constant
+    # shifts; the deep low-pass shift the colorfix applies is approximately
+    # constant within an 8x8 tile, so applying it post-selection is
+    # equivalent to applying it pre-selection. Running on a 256x256 input
+    # collapses match_color from ~700ms to ~5ms. The pyramid level is
+    # adjusted so the deep low-pass period in output space matches what the
+    # full-res level=5 pipeline produced.
+    if color_matching:
+        sm_h, sm_w = rgb_sm.shape[:2]
+        org_sm = _resize(org_rgb, (sm_h, sm_w), Image.BILINEAR)
+        patch = max(1, org_hw[0] // sm_h)
+        level = max(1, 5 - int(round(np.log2(patch))))
+        rgb_sm = match_color(rgb_sm, org_sm, level=level)
 
     if colors > 0:
         weight_mat: np.ndarray | None = None
