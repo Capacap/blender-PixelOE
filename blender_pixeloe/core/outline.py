@@ -39,7 +39,7 @@ from scipy.ndimage import (
     minimum_filter,
 )
 
-from .colorspace import rgb_to_lab
+from .colorspace import rgb_to_lab_L
 
 KERNEL_EXPANSION = np.ones((3, 3), dtype=np.uint8)
 KERNEL_SMOOTHING = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
@@ -148,7 +148,7 @@ def expansion_weight(
     redundant resize-down has been dropped.
     """
     h, w = rgb.shape[:2]
-    L = rgb_to_lab(rgb)[..., 0].astype(np.float32) / 255.0
+    L = rgb_to_lab_L(rgb)
 
     hs = (h // stride) * stride
     ws = (w // stride) * stride

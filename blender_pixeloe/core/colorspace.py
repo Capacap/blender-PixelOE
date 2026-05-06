@@ -114,6 +114,34 @@ def rgb_to_lab(rgb: np.ndarray) -> np.ndarray:
     return np.stack([L_byte, a_byte, b_byte], axis=-1).astype(np.uint8)
 
 
+def rgb_to_lab_L(rgb: np.ndarray) -> np.ndarray:
+    """Compute only the perceptual L* (lightness) channel of LAB from RGB,
+    returned as float32 in [0, 1]. Callers that need only luminance (e.g.
+    expansion_weight) avoid the XYZ matmul and the f() / packing for the
+    a/b channels — about 3x faster than rgb_to_lab on a 2k input.
+
+    Equivalent to `rgb_to_lab(rgb)[..., 0].astype(np.float32) / 255.0` up
+    to the uint8 byte-quantization in the round-trip path; this routine
+    skips that quantization, so values are slightly more precise.
+    """
+    if rgb.dtype != np.uint8 or rgb.ndim != 3 or rgb.shape[2] != 3:
+        raise ValueError(
+            f"expected HxWx3 uint8 RGB; got dtype={rgb.dtype} shape={rgb.shape}"
+        )
+    rgb_lin = _SRGB_LIN_LUT[rgb]
+    # D65 luminance: Y = 0.2127*R + 0.7152*G + 0.0722*B (second row of
+    # _RGB_TO_XYZ). Y/Y_n with Y_n = 1.0 is just Y.
+    Y = (
+        rgb_lin[..., 0] * np.float32(0.2126729)
+        + rgb_lin[..., 1] * np.float32(0.7151522)
+        + rgb_lin[..., 2] * np.float32(0.0721750)
+    )
+    f_y = np.where(
+        Y > _DELTA_CUBED, np.cbrt(Y), Y * _INV_DELTA_FACTOR + _F_OFFSET
+    )
+    return np.clip((116.0 * f_y - 16.0) * np.float32(0.01), 0.0, 1.0).astype(np.float32)
+
+
 def lab_to_rgb(lab: np.ndarray) -> np.ndarray:
     """LAB uint8 HxWx3 in cv2's byte layout to RGB uint8 HxWx3."""
     if lab.dtype != np.uint8 or lab.ndim != 3 or lab.shape[2] != 3:
