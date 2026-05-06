@@ -42,9 +42,9 @@ _INV_DELTA_FACTOR = np.float32(1.0 / (3.0 * float(_DELTA) ** 2))
 _F_OFFSET = np.float32(4.0 / 29.0)
 
 # 256-entry LUT for sRGB linearisation. The input to rgb_to_lab is uint8,
-# so the float-space np.where + power evaluates the same function at only
-# 256 distinct points per channel. Bake those into a LUT and index by the
-# raw byte. Byte-identical to the np.where path; ~7x faster on 2k images.
+# so the analytic formula evaluates at only 256 distinct points per channel.
+# Bake those into a LUT and index by the raw byte. ~7x faster on 2k images
+# than computing the formula on the fly.
 def _build_srgb_lin_lut() -> np.ndarray:
     x = np.arange(256, dtype=np.float32) / 255.0
     return np.where(
@@ -57,10 +57,11 @@ _SRGB_LIN_LUT = _build_srgb_lin_lut()
 
 # 65k-entry uint16 LUT for sRGB gamma encoding. The output of lab_to_rgb is
 # uint8, so 16-bit precision on the input is well below output resolution.
-# Same byte-output for every continuous input within 1/65535 of a level, so
-# in practice the LUT path matches the float-space np.where + power 1/2.4
-# within max 1 byte / mean 0.01 byte on real images. ~6x faster on 2k images
-# (the float power was the single dominant cost in lab_to_rgb).
+# Quantising input to one of 65536 levels yields the same uint8 byte for
+# every continuous input within 1/65535 of a level, so in practice the LUT
+# matches a float-space evaluation of the gamma formula within max 1 byte /
+# mean 0.01 byte on real images. ~6x faster on 2k images (the float power
+# was the single dominant cost in lab_to_rgb).
 def _build_srgb_gamma_lut() -> np.ndarray:
     x = np.arange(65536, dtype=np.float32) / 65535.0
     g = np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1.0 / 2.4) - 0.055)
@@ -105,15 +106,6 @@ def _build_f_inverse_lut() -> np.ndarray:
 
 _F_LUT = _build_f_lut()
 _F_INV_LUT = _build_f_inverse_lut()
-
-
-def _srgb_linearize(c: np.ndarray) -> np.ndarray:
-    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
-
-
-def _srgb_gamma(c: np.ndarray) -> np.ndarray:
-    c = np.clip(c, 0.0, 1.0)
-    return np.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1.0 / 2.4) - 0.055)
 
 
 def _f(t: np.ndarray) -> np.ndarray:
