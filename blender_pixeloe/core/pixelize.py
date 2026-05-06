@@ -62,10 +62,21 @@ def pixelize(
     weight: np.ndarray | None = None
     if thickness:
         rgb, weight = outline_expansion(
-            rgb, erode=thickness, dilate=thickness, k=patch_size
+            rgb,
+            erode=thickness,
+            dilate=thickness,
+            k=patch_size,
+            avg_scale=9,
+            dist_scale=4,
         )
     elif weighted_color:
-        w_map = expansion_weight(rgb, k=patch_size, stride=(patch_size // 4) * 2)
+        w_map = expansion_weight(
+            rgb,
+            k=patch_size,
+            stride=(patch_size // 4) * 2,
+            avg_scale=9,
+            dist_scale=4,
+        )
         weight = np.abs(w_map * 2 - 1)
 
     if color_matching:
