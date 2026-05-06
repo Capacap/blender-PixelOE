@@ -1,99 +1,99 @@
 {
   "_metadata": {
-    "generated_at": "2026-05-06T21:00:41+00:00",
+    "generated_at": "2026-05-06T21:08:04+00:00",
     "comment": "Regenerate via tests/harness/regression.py --update-baseline."
   },
   "cells": {
     "dark_highlights_t128": {
-      "wall_clock_s": 0.4746,
+      "wall_clock_s": 0.4665,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 2.9263,
-      "lab_de76_mean": 1.7058,
-      "lab_de76_p95": 2.112
+      "rgb_l1_mean": 2.813,
+      "lab_de76_mean": 1.6616,
+      "lab_de76_p95": 2.2702
     },
     "gradient_t128": {
-      "wall_clock_s": 0.4605,
+      "wall_clock_s": 0.463,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 4.2843,
-      "lab_de76_mean": 3.2922,
+      "rgb_l1_mean": 4.1135,
+      "lab_de76_mean": 3.1772,
       "lab_de76_p95": 12.6703
     },
     "snow_leopard_t128": {
-      "wall_clock_s": 0.4554,
-      "peak_mem_mib": 96.98,
-      "rgb_l1_mean": 9.9773,
-      "lab_de76_mean": 5.2316,
-      "lab_de76_p95": 15.2574
+      "wall_clock_s": 0.4734,
+      "peak_mem_mib": 96.99,
+      "rgb_l1_mean": 10.0807,
+      "lab_de76_mean": 5.2693,
+      "lab_de76_p95": 14.6834
     },
     "painterly_t128": {
-      "wall_clock_s": 0.5496,
+      "wall_clock_s": 0.5645,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 6.2671,
-      "lab_de76_mean": 5.2357,
-      "lab_de76_p95": 13.8255
+      "rgb_l1_mean": 6.3481,
+      "lab_de76_mean": 5.1721,
+      "lab_de76_p95": 13.8006
     },
     "painterly_t256": {
-      "wall_clock_s": 2.6059,
+      "wall_clock_s": 2.7072,
       "peak_mem_mib": 388.01,
-      "rgb_l1_mean": 5.7042,
-      "lab_de76_mean": 5.0051,
-      "lab_de76_p95": 12.1082
+      "rgb_l1_mean": 5.0774,
+      "lab_de76_mean": 4.5319,
+      "lab_de76_p95": 12.821
     },
     "painterly_t128_kc": {
-      "wall_clock_s": 1.3938,
+      "wall_clock_s": 1.4132,
       "peak_mem_mib": 86.04,
-      "rgb_l1_mean": 5.0559,
-      "lab_de76_mean": 4.4706,
-      "lab_de76_p95": 13.7892
+      "rgb_l1_mean": 5.6395,
+      "lab_de76_mean": 4.9395,
+      "lab_de76_p95": 14.2602
     },
     "painterly_t128_c64": {
-      "wall_clock_s": 0.6117,
+      "wall_clock_s": 0.6178,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 5.6655,
-      "lab_de76_mean": 4.5689,
-      "lab_de76_p95": 12.5626
+      "rgb_l1_mean": 5.6895,
+      "lab_de76_mean": 4.6572,
+      "lab_de76_p95": 13.2837
     },
     "painterly_t128_maxc": {
-      "wall_clock_s": 0.5002,
+      "wall_clock_s": 0.4857,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 6.8231,
-      "lab_de76_mean": 5.5318,
-      "lab_de76_p95": 14.3871
+      "rgb_l1_mean": 6.3782,
+      "lab_de76_mean": 5.1558,
+      "lab_de76_p95": 14.7697
     },
     "impressionism_lady_t128": {
-      "wall_clock_s": 0.5432,
+      "wall_clock_s": 0.5307,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 13.5852,
-      "lab_de76_mean": 8.0492,
-      "lab_de76_p95": 22.5048
+      "rgb_l1_mean": 13.8882,
+      "lab_de76_mean": 8.1913,
+      "lab_de76_p95": 23.3452
     },
     "moon_face_t128": {
-      "wall_clock_s": 0.5533,
+      "wall_clock_s": 0.5242,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 6.2659,
-      "lab_de76_mean": 3.1237,
-      "lab_de76_p95": 11.719
+      "rgb_l1_mean": 6.3855,
+      "lab_de76_mean": 3.1079,
+      "lab_de76_p95": 11.0827
     },
     "stylized_dark_t128": {
-      "wall_clock_s": 0.5292,
+      "wall_clock_s": 0.4957,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 4.0301,
-      "lab_de76_mean": 2.7804,
-      "lab_de76_p95": 10.3166
+      "rgb_l1_mean": 4.232,
+      "lab_de76_mean": 2.8302,
+      "lab_de76_p95": 10.6752
     },
     "stylized_man_t128": {
-      "wall_clock_s": 0.5295,
+      "wall_clock_s": 0.5309,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 9.429,
-      "lab_de76_mean": 5.6479,
-      "lab_de76_p95": 17.4468
+      "rgb_l1_mean": 9.2249,
+      "lab_de76_mean": 5.6159,
+      "lab_de76_p95": 16.5932
     },
     "toon_punk_t128": {
-      "wall_clock_s": 0.5508,
-      "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 12.1527,
-      "lab_de76_mean": 7.2283,
-      "lab_de76_p95": 24.0901
+      "wall_clock_s": 0.5213,
+      "peak_mem_mib": 97.0,
+      "rgb_l1_mean": 12.107,
+      "lab_de76_mean": 7.3881,
+      "lab_de76_p95": 23.4873
     }
   }
 }

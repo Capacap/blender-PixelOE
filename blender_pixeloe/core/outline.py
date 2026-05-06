@@ -194,6 +194,7 @@ def outline_expansion(
 
     output = img_erode * weight + img_dilate * (1 - weight)
     output = output * (1 - orig_weight) + rgb.astype(np.float32) * orig_weight
+    np.clip(output, 0, 255, out=output)
     output = output.astype(np.uint8)
 
     # Upstream finishes with a morphological E_d-D_2d-E_d sequence on the
@@ -202,12 +203,13 @@ def outline_expansion(
     # decimation (typically 8x), those specks are sub-pixel anyway, so a
     # single box average over a comparable footprint produces visually
     # equivalent output for an order-of-magnitude less compute. The
-    # diamond-area-equivalent box size is `2*dilate + 1`.
+    # diamond-area-equivalent box size is `2*dilate + 1`. uniform_filter
+    # on uint8 (in and out) takes scipy's integer code path — about 2x
+    # faster than the float32 path, and rounding diffs are at most 1 byte.
     box_size = max(3, 2 * dilate + 1)
-    smoothed = uniform_filter(
-        output.astype(np.float32), size=(box_size, box_size, 1), mode="reflect"
+    output = uniform_filter(
+        output, size=(box_size, box_size, 1), mode="reflect", output=np.uint8
     )
-    output = np.clip(smoothed, 0, 255).astype(np.uint8)
 
     weight_out = (np.abs(weight * 2 - 1) * 255)[..., 0].astype(np.uint8)
     weight_out = _dilate(weight_out, KERNEL_EXPANSION, dilate)
