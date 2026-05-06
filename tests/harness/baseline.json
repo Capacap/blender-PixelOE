@@ -1,99 +1,99 @@
 {
   "_metadata": {
-    "generated_at": "2026-05-06T20:53:39+00:00",
+    "generated_at": "2026-05-06T21:00:41+00:00",
     "comment": "Regenerate via tests/harness/regression.py --update-baseline."
   },
   "cells": {
     "dark_highlights_t128": {
-      "wall_clock_s": 0.5233,
+      "wall_clock_s": 0.4746,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 2.6497,
-      "lab_de76_mean": 1.6396,
-      "lab_de76_p95": 2.3204
+      "rgb_l1_mean": 2.9263,
+      "lab_de76_mean": 1.7058,
+      "lab_de76_p95": 2.112
     },
     "gradient_t128": {
-      "wall_clock_s": 0.4814,
+      "wall_clock_s": 0.4605,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 4.2442,
-      "lab_de76_mean": 3.1619,
-      "lab_de76_p95": 10.466
+      "rgb_l1_mean": 4.2843,
+      "lab_de76_mean": 3.2922,
+      "lab_de76_p95": 12.6703
     },
     "snow_leopard_t128": {
-      "wall_clock_s": 0.4822,
+      "wall_clock_s": 0.4554,
       "peak_mem_mib": 96.98,
-      "rgb_l1_mean": 9.837,
-      "lab_de76_mean": 5.1101,
-      "lab_de76_p95": 15.3898
+      "rgb_l1_mean": 9.9773,
+      "lab_de76_mean": 5.2316,
+      "lab_de76_p95": 15.2574
     },
     "painterly_t128": {
-      "wall_clock_s": 0.5928,
+      "wall_clock_s": 0.5496,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 5.849,
-      "lab_de76_mean": 4.9311,
-      "lab_de76_p95": 13.842
+      "rgb_l1_mean": 6.2671,
+      "lab_de76_mean": 5.2357,
+      "lab_de76_p95": 13.8255
     },
     "painterly_t256": {
-      "wall_clock_s": 2.7989,
+      "wall_clock_s": 2.6059,
       "peak_mem_mib": 388.01,
-      "rgb_l1_mean": 5.4456,
-      "lab_de76_mean": 4.8497,
-      "lab_de76_p95": 12.2129
+      "rgb_l1_mean": 5.7042,
+      "lab_de76_mean": 5.0051,
+      "lab_de76_p95": 12.1082
     },
     "painterly_t128_kc": {
-      "wall_clock_s": 1.3953,
+      "wall_clock_s": 1.3938,
       "peak_mem_mib": 86.04,
       "rgb_l1_mean": 5.0559,
-      "lab_de76_mean": 4.4727,
+      "lab_de76_mean": 4.4706,
       "lab_de76_p95": 13.7892
     },
     "painterly_t128_c64": {
-      "wall_clock_s": 0.6366,
+      "wall_clock_s": 0.6117,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 5.7608,
-      "lab_de76_mean": 4.7527,
-      "lab_de76_p95": 12.7909
+      "rgb_l1_mean": 5.6655,
+      "lab_de76_mean": 4.5689,
+      "lab_de76_p95": 12.5626
     },
     "painterly_t128_maxc": {
-      "wall_clock_s": 0.5257,
+      "wall_clock_s": 0.5002,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 6.7705,
-      "lab_de76_mean": 5.4617,
-      "lab_de76_p95": 13.9996
+      "rgb_l1_mean": 6.8231,
+      "lab_de76_mean": 5.5318,
+      "lab_de76_p95": 14.3871
     },
     "impressionism_lady_t128": {
-      "wall_clock_s": 0.5638,
+      "wall_clock_s": 0.5432,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 13.6175,
-      "lab_de76_mean": 8.1446,
-      "lab_de76_p95": 22.7876
+      "rgb_l1_mean": 13.5852,
+      "lab_de76_mean": 8.0492,
+      "lab_de76_p95": 22.5048
     },
     "moon_face_t128": {
-      "wall_clock_s": 0.5662,
+      "wall_clock_s": 0.5533,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 6.3185,
-      "lab_de76_mean": 3.1303,
-      "lab_de76_p95": 11.3186
+      "rgb_l1_mean": 6.2659,
+      "lab_de76_mean": 3.1237,
+      "lab_de76_p95": 11.719
     },
     "stylized_dark_t128": {
-      "wall_clock_s": 0.5405,
+      "wall_clock_s": 0.5292,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 4.4551,
-      "lab_de76_mean": 2.9187,
-      "lab_de76_p95": 10.3836
+      "rgb_l1_mean": 4.0301,
+      "lab_de76_mean": 2.7804,
+      "lab_de76_p95": 10.3166
     },
     "stylized_man_t128": {
-      "wall_clock_s": 0.5591,
+      "wall_clock_s": 0.5295,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 9.3038,
-      "lab_de76_mean": 5.5496,
-      "lab_de76_p95": 17.2776
+      "rgb_l1_mean": 9.429,
+      "lab_de76_mean": 5.6479,
+      "lab_de76_p95": 17.4468
     },
     "toon_punk_t128": {
-      "wall_clock_s": 0.5706,
+      "wall_clock_s": 0.5508,
       "peak_mem_mib": 97.01,
-      "rgb_l1_mean": 12.0808,
-      "lab_de76_mean": 7.3592,
-      "lab_de76_p95": 24.4385
+      "rgb_l1_mean": 12.1527,
+      "lab_de76_mean": 7.2283,
+      "lab_de76_p95": 24.0901
     }
   }
 }
