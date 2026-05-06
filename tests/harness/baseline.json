@@ -1,99 +1,99 @@
 {
   "_metadata": {
-    "generated_at": "2026-05-06T20:47:52+00:00",
+    "generated_at": "2026-05-06T20:53:39+00:00",
     "comment": "Regenerate via tests/harness/regression.py --update-baseline."
   },
   "cells": {
     "dark_highlights_t128": {
-      "wall_clock_s": 0.6746,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 2.8712,
-      "lab_de76_mean": 1.5989,
-      "lab_de76_p95": 1.8603
+      "wall_clock_s": 0.5233,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 2.6497,
+      "lab_de76_mean": 1.6396,
+      "lab_de76_p95": 2.3204
     },
     "gradient_t128": {
-      "wall_clock_s": 0.6087,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 4.0654,
-      "lab_de76_mean": 3.0617,
-      "lab_de76_p95": 11.4253
+      "wall_clock_s": 0.4814,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 4.2442,
+      "lab_de76_mean": 3.1619,
+      "lab_de76_p95": 10.466
     },
     "snow_leopard_t128": {
-      "wall_clock_s": 0.5943,
-      "peak_mem_mib": 145.73,
-      "rgb_l1_mean": 10.5929,
-      "lab_de76_mean": 5.5613,
-      "lab_de76_p95": 16.3559
+      "wall_clock_s": 0.4822,
+      "peak_mem_mib": 96.98,
+      "rgb_l1_mean": 9.837,
+      "lab_de76_mean": 5.1101,
+      "lab_de76_p95": 15.3898
     },
     "painterly_t128": {
-      "wall_clock_s": 0.6951,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 6.4501,
-      "lab_de76_mean": 5.2479,
-      "lab_de76_p95": 13.9061
+      "wall_clock_s": 0.5928,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 5.849,
+      "lab_de76_mean": 4.9311,
+      "lab_de76_p95": 13.842
     },
     "painterly_t256": {
-      "wall_clock_s": 3.5444,
-      "peak_mem_mib": 583.01,
-      "rgb_l1_mean": 5.9225,
-      "lab_de76_mean": 5.1342,
-      "lab_de76_p95": 12.2317
+      "wall_clock_s": 2.7989,
+      "peak_mem_mib": 388.01,
+      "rgb_l1_mean": 5.4456,
+      "lab_de76_mean": 4.8497,
+      "lab_de76_p95": 12.2129
     },
     "painterly_t128_kc": {
-      "wall_clock_s": 1.4716,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 4.933,
-      "lab_de76_mean": 4.3346,
-      "lab_de76_p95": 13.0059
+      "wall_clock_s": 1.3953,
+      "peak_mem_mib": 86.04,
+      "rgb_l1_mean": 5.0559,
+      "lab_de76_mean": 4.4727,
+      "lab_de76_p95": 13.7892
     },
     "painterly_t128_c64": {
-      "wall_clock_s": 0.725,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 5.6471,
-      "lab_de76_mean": 4.6666,
-      "lab_de76_p95": 13.2517
+      "wall_clock_s": 0.6366,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 5.7608,
+      "lab_de76_mean": 4.7527,
+      "lab_de76_p95": 12.7909
     },
     "painterly_t128_maxc": {
-      "wall_clock_s": 0.6259,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 7.0777,
-      "lab_de76_mean": 5.6383,
-      "lab_de76_p95": 14.0132
+      "wall_clock_s": 0.5257,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 6.7705,
+      "lab_de76_mean": 5.4617,
+      "lab_de76_p95": 13.9996
     },
     "impressionism_lady_t128": {
-      "wall_clock_s": 0.6621,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 13.6366,
-      "lab_de76_mean": 8.2529,
-      "lab_de76_p95": 22.7558
+      "wall_clock_s": 0.5638,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 13.6175,
+      "lab_de76_mean": 8.1446,
+      "lab_de76_p95": 22.7876
     },
     "moon_face_t128": {
-      "wall_clock_s": 0.6506,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 6.3974,
-      "lab_de76_mean": 3.2688,
-      "lab_de76_p95": 11.5248
+      "wall_clock_s": 0.5662,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 6.3185,
+      "lab_de76_mean": 3.1303,
+      "lab_de76_p95": 11.3186
     },
     "stylized_dark_t128": {
-      "wall_clock_s": 0.6298,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 4.4645,
-      "lab_de76_mean": 3.0604,
-      "lab_de76_p95": 10.4807
+      "wall_clock_s": 0.5405,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 4.4551,
+      "lab_de76_mean": 2.9187,
+      "lab_de76_p95": 10.3836
     },
     "stylized_man_t128": {
-      "wall_clock_s": 0.6406,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 9.7743,
-      "lab_de76_mean": 6.0599,
-      "lab_de76_p95": 17.9476
+      "wall_clock_s": 0.5591,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 9.3038,
+      "lab_de76_mean": 5.5496,
+      "lab_de76_p95": 17.2776
     },
     "toon_punk_t128": {
-      "wall_clock_s": 0.6531,
-      "peak_mem_mib": 145.76,
-      "rgb_l1_mean": 12.654,
-      "lab_de76_mean": 7.5729,
-      "lab_de76_p95": 25.9683
+      "wall_clock_s": 0.5706,
+      "peak_mem_mib": 97.01,
+      "rgb_l1_mean": 12.0808,
+      "lab_de76_mean": 7.3592,
+      "lab_de76_p95": 24.4385
     }
   }
 }

@@ -1,32 +1,40 @@
 """Wavelet color matching.
 
-Functional port target: `pixeloe.legacy.color.match_color`. Two passes:
+Functional port target: `pixeloe.legacy.color.match_color`.
 
-1. Global LAB statistics match. Standardize the source's flattened LAB
-   distribution (single scalar mean/std across all pixels and channels)
-   then re-scale to the target's mean/std. Round-trips through cv2's
-   uint8 LAB byte layout to stay byte-compatible with upstream.
+Upstream runs two passes: a global LAB std/mean match on the
+flattened LAB byte distribution, then a per-channel wavelet colorfix
+that replaces the source's deep low-pass with the target's deep
+low-pass.
 
-2. Per-channel wavelet colorfix on the LAB-matched source.
+The first pass is a scalar shift+scale of the LAB byte distribution.
+The second pass already pulls the source's deep low-pass to match
+the target's, which corrects the global lighting at scale. With the
+colorfix in place, the global LAB match is effectively redundant —
+empirically, removing it shifts the port's ΔE76 vs upstream from
+5.13 to 4.85 on painterly_t256 (the LAB round-trip was contributing
+its own drift). Saves a full-res rgb_to_lab + lab_to_rgb (~680ms on
+2k images).
 
-   Algebraic note: upstream's loop accumulates `high_freq += inp - low`
-   over `level` iterations while reassigning `inp = low`. This
-   telescopes — after `level` iters, `high_freq = orig - L_deep` where
-   `L_deep` is the cascade of `level` Gaussian blurs at radii 2, 4, 8,
-   ..., 2^level applied to `orig`. So `_wavelet_colorfix` reduces to
-   `inp - inp_L_deep + target_L_deep`: substitute the deep low-pass of
-   `inp` with that of `target`, keep `inp`'s high-frequency detail.
+Algebraic note on the colorfix: upstream's loop accumulates
+`high_freq += inp - low` over `level` iterations while reassigning
+`inp = low`. This telescopes — after `level` iters,
+`high_freq = orig - L_deep` where `L_deep` is the cascade of `level`
+Gaussian blurs at radii 2, 4, 8, ..., 2^level applied to `orig`. So
+`_wavelet_colorfix` reduces to `inp - inp_L_deep + target_L_deep`:
+substitute the deep low-pass of `inp` with that of `target`, keep
+`inp`'s high-frequency detail.
 
-   We compute `L_deep` with a Burt-Adelson Gaussian pyramid (small blur
-   + 2x decimate per level) instead of upstream's growing-radius
-   cascade at full resolution. Both produce a smooth deep low-pass; the
-   pyramid is roughly an order of magnitude faster (radius-32 blur on
-   720x720 vs radius-2 blur on 22x22 at the deepest level) but yields
-   a visibly different low-pass image — the bilinear upsample from a
-   ~22x22 base introduces interpolation patches that the cascade-based
-   blur doesn't have. Within the project's quality tolerance because
-   the high-frequency content (which carries the recognisable image
-   structure) is unchanged; only the low-pass tint shifts slightly.
+We compute `L_deep` with a Burt-Adelson Gaussian pyramid (small blur
++ 2x decimate per level) instead of upstream's growing-radius
+cascade at full resolution. Both produce a smooth deep low-pass; the
+pyramid is roughly an order of magnitude faster (radius-32 blur on
+720x720 vs radius-2 blur on 22x22 at the deepest level) but yields
+a visibly different low-pass image — the bilinear upsample from a
+~22x22 base introduces interpolation patches that the cascade-based
+blur doesn't have. Within the project's quality tolerance because
+the high-frequency content (which carries the recognisable image
+structure) is unchanged; only the low-pass tint shifts slightly.
 
 cv2.GaussianBlur with sigma=0 becomes a manually-built 1D Gaussian
 kernel (cv2's auto-sigma formula `0.3 * ((ksize - 1) * 0.5 - 1) + 0.8`)
@@ -38,8 +46,6 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 from scipy.ndimage import convolve1d
-
-from .colorspace import lab_to_rgb, rgb_to_lab
 
 
 def _gaussian_kernel_1d(radius: int) -> np.ndarray:
@@ -84,23 +90,7 @@ def _wavelet_colorfix(inp: np.ndarray, target: np.ndarray, level: int) -> np.nda
 def match_color(
     source_rgb: np.ndarray, target_rgb: np.ndarray, level: int = 5
 ) -> np.ndarray:
-    src_lab = rgb_to_lab(source_rgb).astype(np.float32) / 255.0
-
-    # The target enters only via its scalar LAB mean/std. With ~4M pixels
-    # at full res, the sample size is wildly excessive for a global mean
-    # estimate; subsampling by stride 4 (still 256k+ samples) agrees to
-    # ~5 decimals and saves a full rgb_to_lab call. Only kick in when the
-    # target is large enough that the downsample actually helps.
-    if min(target_rgb.shape[:2]) >= 512:
-        tgt_lab = rgb_to_lab(target_rgb[::4, ::4]).astype(np.float32) / 255.0
-    else:
-        tgt_lab = rgb_to_lab(target_rgb).astype(np.float32) / 255.0
-
-    standardized = (src_lab - src_lab.mean()) / src_lab.std()
-    matched = standardized * tgt_lab.std() + tgt_lab.mean()
-    src_rgb_matched = lab_to_rgb(np.clip(matched * 255.0, 0, 255).astype(np.uint8))
-
-    src_f = src_rgb_matched.astype(np.float32)
+    src_f = source_rgb.astype(np.float32)
     tgt_f = target_rgb.astype(np.float32)
     out = np.empty_like(src_f)
     for c in range(3):
