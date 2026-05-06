@@ -3,11 +3,15 @@
 Direct port of `pixeloe.legacy.outline.expansion_weight` and
 `outline_expansion`. Two cv2-only ops are substituted:
 
-    cv2.erode/dilate    -> scipy.ndimage.grey_erosion/grey_dilation looped
-                          per channel, per iteration. cv2's defaults pad
-                          erosion with the maximum value (255) and dilation
-                          with 0 so border pixels aren't biased; we match
-                          via `mode='constant', cval=255` / `cval=0`.
+    cv2.erode/dilate    -> scipy.ndimage.grey_erosion/grey_dilation with a
+                          composed footprint (Minkowski sum of the 3x3
+                          structuring element with itself `iterations`
+                          times). cv2's defaults pad erosion with the
+                          maximum value (255) and dilation with 0 so
+                          border pixels aren't biased; we match via
+                          `mode='constant', cval=255` / `cval=0`. RGB input
+                          uses a (k,k,1) footprint so the channel axis
+                          rides along in one scipy call.
     cv2.resize INTER_LINEAR
                         -> Pillow `Image.resize(BILINEAR)` on a single-
                           channel float32 array (mode 'F'). Sub-pixel
@@ -26,7 +30,7 @@ from __future__ import annotations
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import grey_dilation, grey_erosion
+from scipy.ndimage import binary_dilation, grey_dilation, grey_erosion
 
 from .colorspace import rgb_to_lab
 from .sliding import apply_chunk
@@ -39,6 +43,22 @@ def _sigmoid(x: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-x))
 
 
+def _composed_footprint(footprint: np.ndarray, iterations: int) -> np.ndarray:
+    """Iterated morphology with a flat structuring element collapses to a
+    single morphology with the Minkowski sum of that element with itself
+    `iterations` times: 3x3 ones iter N -> (2N+1)x(2N+1) ones; 4-connected
+    plus iter N -> L1 diamond of radius N. Footprint must be odd-sized."""
+    fp = footprint.astype(bool)
+    if iterations <= 1:
+        return fp
+    fh, fw = fp.shape
+    out_h = (fh - 1) * iterations + 1
+    out_w = (fw - 1) * iterations + 1
+    seed = np.zeros((out_h, out_w), dtype=bool)
+    seed[out_h // 2, out_w // 2] = True
+    return binary_dilation(seed, structure=fp, iterations=iterations)
+
+
 def _morph(
     img: np.ndarray,
     footprint: np.ndarray,
@@ -49,18 +69,10 @@ def _morph(
 ) -> np.ndarray:
     if iterations <= 0:
         return img.copy()
+    composed = _composed_footprint(footprint, iterations)
     if img.ndim == 2:
-        out = img
-        for _ in range(iterations):
-            out = op(out, footprint=footprint, mode="constant", cval=cval)
-        return out
-    out = np.empty_like(img)
-    for c in range(img.shape[-1]):
-        ch = img[..., c]
-        for _ in range(iterations):
-            ch = op(ch, footprint=footprint, mode="constant", cval=cval)
-        out[..., c] = ch
-    return out
+        return op(img, footprint=composed, mode="constant", cval=cval)
+    return op(img, footprint=composed[..., None], mode="constant", cval=cval)
 
 
 def _erode(img: np.ndarray, footprint: np.ndarray, iterations: int) -> np.ndarray:
