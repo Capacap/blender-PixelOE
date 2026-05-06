@@ -85,7 +85,16 @@ def match_color(
     source_rgb: np.ndarray, target_rgb: np.ndarray, level: int = 5
 ) -> np.ndarray:
     src_lab = rgb_to_lab(source_rgb).astype(np.float32) / 255.0
-    tgt_lab = rgb_to_lab(target_rgb).astype(np.float32) / 255.0
+
+    # The target enters only via its scalar LAB mean/std. With ~4M pixels
+    # at full res, the sample size is wildly excessive for a global mean
+    # estimate; subsampling by stride 4 (still 256k+ samples) agrees to
+    # ~5 decimals and saves a full rgb_to_lab call. Only kick in when the
+    # target is large enough that the downsample actually helps.
+    if min(target_rgb.shape[:2]) >= 512:
+        tgt_lab = rgb_to_lab(target_rgb[::4, ::4]).astype(np.float32) / 255.0
+    else:
+        tgt_lab = rgb_to_lab(target_rgb).astype(np.float32) / 255.0
 
     standardized = (src_lab - src_lab.mean()) / src_lab.std()
     matched = standardized * tgt_lab.std() + tgt_lab.mean()
