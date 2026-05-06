@@ -31,7 +31,6 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 from scipy.ndimage import (
-    binary_dilation,
     grey_dilation,
     grey_erosion,
     maximum_filter,
@@ -42,70 +41,38 @@ from scipy.ndimage import (
 
 from .colorspace import rgb_to_lab_L
 
-KERNEL_EXPANSION = np.ones((3, 3), dtype=np.uint8)
-KERNEL_SMOOTHING = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.uint8)
-
 
 def _sigmoid(x: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-x))
 
 
-def _composed_footprint(footprint: np.ndarray, iterations: int) -> np.ndarray:
-    """Iterated morphology with a flat structuring element collapses to a
-    single morphology with the Minkowski sum of that element with itself
-    `iterations` times: 3x3 ones iter N -> (2N+1)x(2N+1) ones; 4-connected
-    plus iter N -> L1 diamond of radius N. Footprint must be odd-sized."""
-    fp = footprint.astype(bool)
-    if iterations <= 1:
-        return fp
-    fh, fw = fp.shape
-    out_h = (fh - 1) * iterations + 1
-    out_w = (fw - 1) * iterations + 1
-    seed = np.zeros((out_h, out_w), dtype=bool)
-    seed[out_h // 2, out_w // 2] = True
-    return binary_dilation(seed, structure=fp, iterations=iterations)
-
-
 def _morph(
     img: np.ndarray,
-    footprint: np.ndarray,
     iterations: int,
     *,
     op,
     cval: int,
 ) -> np.ndarray:
-    """Dispatch by footprint shape:
-
-      * Flat boxes (KERNEL_EXPANSION): scipy's grey_erosion / grey_dilation
-        autodetect flat-rectangle structures and take the van Herk /
-        Gil-Werman fast path (O(1) per pixel regardless of window size),
-        so the composed (2N+1)x(2N+1) box runs in one cheap call.
-      * Non-boxes (KERNEL_SMOOTHING -> diamond): scipy falls back to a
-        generic per-True-element loop, so cost scales with footprint area.
-        Iterating the small base footprint costs N*|small| per pixel
-        instead of |composed| ~ N^2 — measurably faster from N=3 onward
-        and ~2x faster at N=6.
+    """Iterated 3x3-box morphology collapses to a single (2N+1)x(2N+1)-box
+    morphology (Minkowski sum of an all-ones 3x3 with itself N times).
+    scipy.ndimage.grey_erosion / grey_dilation autodetect flat-rectangle
+    footprints and take the van Herk / Gil-Werman fast path (O(1) per pixel
+    regardless of window size), so the composed box runs in one cheap call.
     """
     if iterations <= 0:
         return img.copy()
-    fp = footprint.astype(bool)
-    if fp.all():
-        composed = _composed_footprint(footprint, iterations)
-        scipy_fp = composed if img.ndim == 2 else composed[..., None]
-        return op(img, footprint=scipy_fp, mode="constant", cval=cval)
+    size = 2 * iterations + 1
+    fp = np.ones((size, size), dtype=bool)
     scipy_fp = fp if img.ndim == 2 else fp[..., None]
-    out = img
-    for _ in range(iterations):
-        out = op(out, footprint=scipy_fp, mode="constant", cval=cval)
-    return out
+    return op(img, footprint=scipy_fp, mode="constant", cval=cval)
 
 
-def _erode(img: np.ndarray, footprint: np.ndarray, iterations: int) -> np.ndarray:
-    return _morph(img, footprint, iterations, op=grey_erosion, cval=255)
+def _erode(img: np.ndarray, iterations: int) -> np.ndarray:
+    return _morph(img, iterations, op=grey_erosion, cval=255)
 
 
-def _dilate(img: np.ndarray, footprint: np.ndarray, iterations: int) -> np.ndarray:
-    return _morph(img, footprint, iterations, op=grey_dilation, cval=0)
+def _dilate(img: np.ndarray, iterations: int) -> np.ndarray:
+    return _morph(img, iterations, op=grey_dilation, cval=0)
 
 
 def _resize_bilinear_2d(arr: np.ndarray, target_wh: tuple[int, int]) -> np.ndarray:
@@ -189,8 +156,8 @@ def outline_expansion(
     weight = expansion_weight(rgb, k, (k // 4) * 2, avg_scale, dist_scale)[..., None]
     orig_weight = _sigmoid((weight - 0.5) * 5) * 0.25
 
-    img_erode = _erode(rgb, KERNEL_EXPANSION, erode).astype(np.float32)
-    img_dilate = _dilate(rgb, KERNEL_EXPANSION, dilate).astype(np.float32)
+    img_erode = _erode(rgb, erode).astype(np.float32)
+    img_dilate = _dilate(rgb, dilate).astype(np.float32)
 
     output = img_erode * weight + img_dilate * (1 - weight)
     output = output * (1 - orig_weight) + rgb.astype(np.float32) * orig_weight
@@ -212,5 +179,5 @@ def outline_expansion(
     )
 
     weight_out = (np.abs(weight * 2 - 1) * 255)[..., 0].astype(np.uint8)
-    weight_out = _dilate(weight_out, KERNEL_EXPANSION, dilate)
+    weight_out = _dilate(weight_out, dilate)
     return output, weight_out.astype(np.float32) / 255.0

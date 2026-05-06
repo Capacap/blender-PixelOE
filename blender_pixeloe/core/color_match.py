@@ -28,12 +28,11 @@ substitute the deep low-pass of `inp` with that of `target`, keep
 We compute `L_deep` with a Burt-Adelson Gaussian pyramid (small blur
 + 2x decimate per level) instead of upstream's growing-radius
 cascade at full resolution. Both produce a smooth deep low-pass; the
-pyramid is roughly an order of magnitude faster (radius-32 blur on
-720x720 vs radius-2 blur on 22x22 at the deepest level) but yields
-a visibly different low-pass image — the bilinear upsample from a
-~22x22 base introduces interpolation patches that the cascade-based
-blur doesn't have. Within the project's quality tolerance because
-the high-frequency content (which carries the recognisable image
+pyramid is faster than evaluating progressively wider Gaussian
+kernels at full res, at the cost of a bilinear-upsampled deep base
+that introduces minor interpolation patches the cascade doesn't
+have. Within the project's quality tolerance because the
+high-frequency content (which carries the recognisable image
 structure) is unchanged; only the low-pass tint shifts slightly.
 
 cv2.GaussianBlur with sigma=0 becomes a manually-built 1D Gaussian

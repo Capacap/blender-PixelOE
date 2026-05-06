@@ -77,7 +77,7 @@ _SRGB_GAMMA_LUT = _build_srgb_gamma_lut()
 # path on the final L channel. Domains chosen to cover all values that
 # arise from in-gamut sRGB plus headroom for the slightly-out-of-range
 # clipping that happens after the inverse XYZ matmul.
-_F_LUT_DOMAIN_HI = np.float32(1.2)
+_F_LUT_HI = np.float32(1.2)
 _F_LUT_SCALE = np.float32(65535.0 / 1.2)
 _F_INV_LUT_LO = np.float32(-0.5)
 _F_INV_LUT_HI = np.float32(1.5)
@@ -85,7 +85,7 @@ _F_INV_LUT_SCALE = np.float32(65535.0 / 2.0)
 
 
 def _build_f_lut() -> np.ndarray:
-    x = np.linspace(0.0, float(_F_LUT_DOMAIN_HI), 65536, dtype=np.float64)
+    x = np.linspace(0.0, float(_F_LUT_HI), 65536, dtype=np.float64)
     return np.where(
         x > float(_DELTA_CUBED),
         np.cbrt(x),
