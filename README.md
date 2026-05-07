@@ -82,10 +82,17 @@ Each of these was a deliberate cut for the v1 ship:
 
 Most of the project's volume is in the algorithm port. Upstream is roughly
 640 lines of Python that lean heavily on torch and cv2. The numpy port aimed
-for human-eye parity, not bit-exact equivalence: the harness reports mean
-LAB ΔE76 between 1.7 and 8.2 across the test set at `target_size=128`. The
-remaining drift is mostly low-frequency color tint; tile selection and
-outline structure match upstream closely.
+for human-eye parity, not bit-exact equivalence. The harness reports mean
+LAB ΔE76 between 1.7 and 8.2 across the test set, but that number bundles
+two effects. With quantization disabled (`colors=0`) the spread tightens
+to 0.8 to 5.5; the remainder is k-means palette-choice variance. The port's
+k-means++ and upstream's `cv2.kmeans(KMEANS_RANDOM_CENTERS, attempts=4)`
+produce different but equally-optimal 32-way LAB partitions, and borderline
+pixels get assigned to different cluster centers. That's a real RGB
+difference, not a quality difference. Tile selection and outline structure
+match upstream closely; the residual algorithmic drift is mostly
+low-frequency color tint from LAB conversion. The reproducible ablation is
+in `tests/harness/ablation_quant.py`.
 
 The substantive work was making it fast on 4k inputs without the GPU.
 

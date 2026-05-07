@@ -1,0 +1,134 @@
+{
+  "_metadata": {
+    "generated_at": "2026-05-07T15:34:45+00:00",
+    "comment": "Per-cell deltas between baseline (with quantization) and ablation (colors=0). The 'palette_share' columns are the amount of the headline metric attributable to k-means palette-choice variance vs upstream."
+  },
+  "summary": {
+    "lab_de76_palette_share_mean": 1.9066,
+    "lab_de76_palette_share_max": 2.7995,
+    "rgb_l1_palette_share_mean": 1.9738,
+    "rgb_l1_palette_share_max": 2.6601
+  },
+  "rows": [
+    {
+      "cell": "dark_highlights_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 2.813,
+      "rgb_l1_no_quant": 1.8051,
+      "rgb_l1_palette_share": 1.0079,
+      "lab_de76_with_quant": 1.6616,
+      "lab_de76_no_quant": 0.8326,
+      "lab_de76_palette_share": 0.829
+    },
+    {
+      "cell": "gradient_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 4.1135,
+      "rgb_l1_no_quant": 2.4708,
+      "rgb_l1_palette_share": 1.6427,
+      "lab_de76_with_quant": 3.1772,
+      "lab_de76_no_quant": 1.6426,
+      "lab_de76_palette_share": 1.5346
+    },
+    {
+      "cell": "snow_leopard_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 10.0807,
+      "rgb_l1_no_quant": 8.2837,
+      "rgb_l1_palette_share": 1.797,
+      "lab_de76_with_quant": 5.2693,
+      "lab_de76_no_quant": 3.8481,
+      "lab_de76_palette_share": 1.4212
+    },
+    {
+      "cell": "painterly_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 6.3481,
+      "rgb_l1_no_quant": 3.7527,
+      "rgb_l1_palette_share": 2.5954,
+      "lab_de76_with_quant": 5.1721,
+      "lab_de76_no_quant": 2.3782,
+      "lab_de76_palette_share": 2.7939
+    },
+    {
+      "cell": "painterly_t256",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 5.0774,
+      "rgb_l1_no_quant": 2.4173,
+      "rgb_l1_palette_share": 2.6601,
+      "lab_de76_with_quant": 4.5319,
+      "lab_de76_no_quant": 1.7324,
+      "lab_de76_palette_share": 2.7995
+    },
+    {
+      "cell": "painterly_t128_c64",
+      "colors_baseline": 64,
+      "rgb_l1_with_quant": 5.6895,
+      "rgb_l1_no_quant": 3.7527,
+      "rgb_l1_palette_share": 1.9368,
+      "lab_de76_with_quant": 4.6572,
+      "lab_de76_no_quant": 2.3782,
+      "lab_de76_palette_share": 2.279
+    },
+    {
+      "cell": "painterly_t128_maxc",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 6.3782,
+      "rgb_l1_no_quant": 3.7527,
+      "rgb_l1_palette_share": 2.6255,
+      "lab_de76_with_quant": 5.1558,
+      "lab_de76_no_quant": 2.3782,
+      "lab_de76_palette_share": 2.7776
+    },
+    {
+      "cell": "impressionism_lady_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 13.8882,
+      "rgb_l1_no_quant": 11.4434,
+      "rgb_l1_palette_share": 2.4448,
+      "lab_de76_with_quant": 8.1913,
+      "lab_de76_no_quant": 5.4521,
+      "lab_de76_palette_share": 2.7392
+    },
+    {
+      "cell": "moon_face_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 6.3855,
+      "rgb_l1_no_quant": 5.0252,
+      "rgb_l1_palette_share": 1.3603,
+      "lab_de76_with_quant": 3.1079,
+      "lab_de76_no_quant": 2.4542,
+      "lab_de76_palette_share": 0.6537
+    },
+    {
+      "cell": "stylized_dark_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 4.232,
+      "rgb_l1_no_quant": 2.5564,
+      "rgb_l1_palette_share": 1.6756,
+      "lab_de76_with_quant": 2.8302,
+      "lab_de76_no_quant": 1.7347,
+      "lab_de76_palette_share": 1.0955
+    },
+    {
+      "cell": "stylized_man_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 9.2249,
+      "rgb_l1_no_quant": 7.3873,
+      "rgb_l1_palette_share": 1.8376,
+      "lab_de76_with_quant": 5.6159,
+      "lab_de76_no_quant": 4.0867,
+      "lab_de76_palette_share": 1.5292
+    },
+    {
+      "cell": "toon_punk_t128",
+      "colors_baseline": 32,
+      "rgb_l1_with_quant": 12.107,
+      "rgb_l1_no_quant": 10.0049,
+      "rgb_l1_palette_share": 2.1021,
+      "lab_de76_with_quant": 7.3881,
+      "lab_de76_no_quant": 4.9608,
+      "lab_de76_palette_share": 2.4273
+    }
+  ]
+}
