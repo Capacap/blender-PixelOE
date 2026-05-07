@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Sync project
+        run: uv sync --frozen --no-dev
+
+      - name: Verify tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          manifest_version="$(uv run python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('blender_pixeloe/blender_manifest.toml').read_text())['version'])")"
+          if [ "$tag_version" != "$manifest_version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match manifest version ${manifest_version}"
+            exit 1
+          fi
+
+      - name: Cache scipy wheels
+        id: wheel-cache
+        uses: actions/cache@v4
+        with:
+          path: blender_pixeloe/wheels
+          key: scipy-wheels-${{ hashFiles('scripts/build_addon.py') }}
+
+      - name: Build addon zip
+        run: |
+          if [ "${{ steps.wheel-cache.outputs.cache-hit }}" = "true" ]; then
+            uv run python scripts/build_addon.py --skip-fetch
+          else
+            uv run python scripts/build_addon.py
+          fi
+
+      - name: Upload artifact (non-tag runs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender_pixeloe-zip
+          path: dist/blender_pixeloe-*.zip
+          retention-days: 7
+
+      - name: Publish to release (tag runs)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" dist/blender_pixeloe-*.zip --repo "${GITHUB_REPOSITORY}" --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              dist/blender_pixeloe-*.zip \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes
+          fi
