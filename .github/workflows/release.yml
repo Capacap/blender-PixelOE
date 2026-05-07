@@ -45,10 +45,12 @@ jobs:
 
       - name: Build addon zip
         run: |
+          # build_addon.py shells out to `python -m pip download`; uv-managed
+          # venvs don't include pip, so inject it into the run-time.
           if [ "${{ steps.wheel-cache.outputs.cache-hit }}" = "true" ]; then
-            uv run python scripts/build_addon.py --skip-fetch
+            uv run --with pip python scripts/build_addon.py --skip-fetch
           else
-            uv run python scripts/build_addon.py
+            uv run --with pip python scripts/build_addon.py
           fi
 
       - name: Upload artifact (non-tag runs)
