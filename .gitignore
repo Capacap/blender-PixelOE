@@ -31,6 +31,7 @@ tests/upstream/
 tests/harness/output/
 tests/harness/cache/
 tests/harness/regression_local.py
+blender_pixeloe/wheels/
 
 # Test images sourced from the web - not redistributable
 tests/images/UI.jpg

@@ -1,0 +1,32 @@
+schema_version = "1.0.0"
+
+id = "blender_pixeloe"
+version = "0.1.0"
+name = "PixelOE"
+tagline = "Pixelize images with the PixelOE algorithm"
+maintainer = "Simon Sorkin <simon.sorkin@outlook.com>"
+type = "add-on"
+
+website = "https://github.com/capacap/blender-pixeloe"
+
+tags = ["Image"]
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:Apache-2.0"]
+copyright = [
+  "2024-2026 Simon Sorkin",
+  "2024 Shih-Ying Yeh (KohakuBlueleaf) - upstream PixelOE algorithm",
+]
+
+platforms = ["linux-x64", "windows-x64", "macos-x64", "macos-arm64"]
+
+# wheels list is populated by scripts/build_addon.py at zip time. Editing
+# this in-tree placeholder has no effect on the shipped addon.
+wheels = []
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "*.pyc",
+]

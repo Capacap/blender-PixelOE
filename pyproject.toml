@@ -31,3 +31,4 @@ Upstream = "https://github.com/KohakuBlueleaf/PixelOE"
 
 [tool.hatch.build.targets.wheel]
 packages = ["blender_pixeloe"]
+exclude = ["blender_pixeloe/wheels"]
