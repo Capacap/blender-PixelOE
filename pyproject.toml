@@ -24,7 +24,13 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=7.0"]
+dev = [
+    "pytest>=7.0",
+    # build_addon.py shells out to `python -m pip download` to fetch scipy
+    # wheels for each Blender platform/ABI; uv-managed venvs do not include
+    # pip by default.
+    "pip>=24.0",
+]
 
 [project.urls]
 Upstream = "https://github.com/KohakuBlueleaf/PixelOE"
