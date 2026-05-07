@@ -19,6 +19,8 @@ naive resampling smears edges and washes out color.
 
 ![comparison grid](docs/comparison.png)
 
+Full test suite comparisons: [docs/full_comparison.png](docs/full_comparison.png).
+
 ## Install
 
 Pre-built zip (recommended):

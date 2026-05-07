@@ -9,8 +9,10 @@ Each row is rendered in four panels:
   4. PixelOE at target_size=128
 
 Outputs:
-  docs/hero.png       - one 4-panel strip for the top of the README
-  docs/comparison.png - 3-row, 4-column grid covering three test images
+  docs/hero.png            - one 4-panel strip for the top of the README
+  docs/comparison.png      - 3-row grid covering the headline test images
+  docs/full_comparison.png - same layout across the full test suite (linked,
+                             not inlined, in the README)
 """
 from __future__ import annotations
 
@@ -171,6 +173,23 @@ def main() -> None:
     grid = _compose_grid(rows, col_labels)
     grid.save(DOCS_DIR / "comparison.png", optimize=True)
     print(f"wrote {DOCS_DIR / 'comparison.png'} ({grid.size})")
+
+    # Full suite: every committed test image except the synthetic gradient
+    # (which is an algorithmic correctness check, not a visual demo).
+    full_suite = [
+        "snow-leopard.webp",
+        "painterly_portrait.png",
+        "stylized_man_portrait.png",
+        "stylized_dark_portrait.png",
+        "impressionism_lady.png",
+        "toon_punk_girl.png",
+        "realistic_surreal_moon_face.png",
+        "dark-highlights.png",
+    ]
+    full_rows = [_render_panels(_load(name)) for name in full_suite]
+    full_grid = _compose_grid(full_rows, col_labels)
+    full_grid.save(DOCS_DIR / "full_comparison.png", optimize=True)
+    print(f"wrote {DOCS_DIR / 'full_comparison.png'} ({full_grid.size})")
 
 
 if __name__ == "__main__":
