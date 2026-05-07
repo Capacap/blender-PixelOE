@@ -67,9 +67,16 @@ class PixeloeSettings(bpy.types.PropertyGroup):
 
 
 class PIXELOE_OT_pixelize_image(bpy.types.Operator):
-    """Pixelize the active Image Editor image with the PixelOE algorithm."""
+    """Pixelize the active Image Editor image with the PixelOE algorithm.
+
+    Runs synchronously and blocks the UI for a few seconds on large inputs;
+    a wait cursor is shown for the duration"""
     bl_idname = "pixeloe.pixelize_image"
     bl_label = "Pixelize"
+    bl_description = (
+        "Pixelize the active image (PixelOE). Runs synchronously; the UI "
+        "freezes with a wait cursor for a few seconds on large inputs"
+    )
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -97,7 +104,13 @@ class PIXELOE_OT_pixelize_image(bpy.types.Operator):
             return {'CANCELLED'}
 
         wm = context.window_manager
+        window = context.window
         wm.progress_begin(0, 1)
+        window.cursor_set('WAIT')
+        # Force one redraw cycle so the cursor change actually flushes to the
+        # OS before we block the event loop. Without this, cursor_set is a
+        # no-op on the Linux compositors I've tested.
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
         try:
             try:
                 out_rgb = pixelize(
@@ -114,12 +127,12 @@ class PIXELOE_OT_pixelize_image(bpy.types.Operator):
                 return {'CANCELLED'}
         finally:
             wm.progress_end()
+            window.cursor_set('DEFAULT')
 
         out_name = f"{_strip_image_ext(src.name)}_pixel"
         out_image = array_to_image(
             out_rgb, out_name, overwrite=not settings.create_new
         )
-        space.image = out_image
 
         h, w = out_rgb.shape[:2]
         self.report(
