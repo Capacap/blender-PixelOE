@@ -35,6 +35,11 @@ class PixeloeSettings(bpy.types.PropertyGroup):
         description="Block size for outline analysis and the size of each output pixel after upscale",
         default=16, min=1, soft_max=32, max=64,
     )
+    upscale: BoolProperty(
+        name="Upscale",
+        description="Scale the result up by Patch Size with nearest-neighbour so each pixel becomes a chunky block. Off (default) keeps output at the pixel-grid resolution",
+        default=False,
+    )
     thickness: IntProperty(
         name="Outline Thickness",
         description="Erode/dilate iteration count for outline expansion. 0 disables outline pre-processing",
@@ -102,6 +107,7 @@ class PIXELOE_OT_pixelize_image(bpy.types.Operator):
                     patch_size=settings.patch_size,
                     thickness=settings.thickness,
                     colors=settings.colors,
+                    no_upscale=not settings.upscale,
                 )
             except Exception as exc:
                 self.report({'ERROR'}, f"PixelOE failed: {exc}")

@@ -27,6 +27,7 @@ class PIXELOE_PT_panel(bpy.types.Panel):
         col.prop(settings, "mode")
         col.prop(settings, "target_size")
         col.prop(settings, "patch_size")
+        col.prop(settings, "upscale")
         col.prop(settings, "thickness")
         col.prop(settings, "colors")
 
