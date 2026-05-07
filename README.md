@@ -10,11 +10,12 @@ runtime pip install.
 
 ## What it does
 
-PixelOE is not a neural net. It's classical image processing: outline-aware
-morphology, LAB-space contrast statistics, tile-wise pixel selection,
-optional palette quantization, and a Burt-Adelson pyramid for color matching.
-The result preserves silhouettes and saturation through aggressive
-downscaling, where naive resampling produces a blurry, desaturated mess.
+Despite the upstream's torch and Kornia dependencies, PixelOE is a classical
+image-processing algorithm. The pipeline is outline-aware morphology,
+LAB-space contrast statistics, tile-wise pixel selection, optional palette
+quantization, and a Burt-Adelson pyramid for color matching. The result
+preserves silhouettes and saturation through aggressive downscaling, where
+naive resampling smears edges and washes out color.
 
 ![comparison grid](docs/comparison.png)
 
@@ -66,7 +67,7 @@ itself does not affect texture sampling.
 
 ## Limitations (v1)
 
-These are deliberate cuts, not work-in-progress:
+Each of these was a deliberate cut for the v1 ship:
 
 - No Render Result. Blender's Render Result datablock has unreliable pixel
   access; save to file and reopen.
@@ -79,11 +80,12 @@ These are deliberate cuts, not work-in-progress:
 
 Most of the project's volume is in the algorithm port. Upstream is roughly
 640 lines of Python that lean heavily on torch and cv2. The numpy port aimed
-for human-eye parity, not bit-exact equivalence: the harness reports
-mean LAB ΔE76 of 3 to 8 across the test set at `target_size=128`, which is
-imperceptible side-by-side at typical viewing sizes.
+for human-eye parity, not bit-exact equivalence: the harness reports mean
+LAB ΔE76 between 1.7 and 8.2 across the test set at `target_size=128`. The
+remaining drift is mostly low-frequency color tint; tile selection and
+outline structure match upstream closely.
 
-The interesting work was making it fast on 4k inputs without the GPU.
+The substantive work was making it fast on 4k inputs without the GPU.
 
 ### Color space conversions via LUTs
 
@@ -94,11 +96,13 @@ makes them perfect targets for lookup tables.
 - sRGB → linear is a piecewise function on uint8 inputs; only 256 outputs
   exist, so a 256-entry float32 LUT replaces `np.where` plus `np.power`.
 - The LAB nonlinearity `f(x) = x^(1/3)` for `x > 0.008856` is sampled into a
-  65k-entry LUT and looked up via linear interpolation on its uint16 quantized
-  input. Same for the inverse `f^-1`.
+  65k-entry LUT and indexed by uint16-quantized input. The 16-bit input
+  resolution is well below the eventual uint8 output, so the LUT path
+  matches a fresh `np.cbrt` evaluation within 1 byte. Same for the inverse
+  `f^-1` and the sRGB gamma encode on the way out.
 - The L-channel-only path skips a/b math entirely. Several callers (outline
-  expansion, contrast statistics) only need L; isolating that path roughly
-  halves their LAB cost.
+  expansion, contrast statistics) only need L; isolating that path makes
+  those callers about 3x faster on a 2k input.
 
 ### Avoiding full-resolution work where the output is small
 
@@ -106,53 +110,73 @@ A 4k input pixelized at `target_size=128` ultimately produces a 128-pixel-wide
 small image. Several upstream stages did full-resolution work that
 contributes nothing past the eventual decimation.
 
-- `expansion_weight`: the original applies `maximum_filter` and
-  `minimum_filter` at the input resolution with a kernel that's a fraction of
-  `patch_size`. Equivalent statistics fall out of a downsample-then-filter
-  step on a much smaller grid: the filter sees the same neighbourhoods scaled
-  to fit. This collapses the 4k path from ~4 s to under 100 ms.
-- `contrast_based_downscale`: upstream slides `patch_size`-sized windows over
-  the full-res input. The port reshapes the input into a tile grid and
-  reduces along the tile axes directly, skipping `sliding_window_view`
-  altogether.
+- `expansion_weight`: the original applies `maximum_filter`,
+  `minimum_filter`, and `median_filter` at the input resolution with a
+  kernel that's a fraction of `patch_size`. Equivalent statistics fall out
+  of a downsample-then-filter step on a much smaller grid: the filter sees
+  the same neighbourhoods scaled to fit. The full-res median alone was the
+  dominant cost (~3.5 s on a 2k input); the decimated grid runs the same
+  statistics in milliseconds.
+- `contrast_based_downscale`: upstream slides `patch_size`-sized windows
+  over the full-res input. The port reshapes the input into a tile grid
+  and reduces along the tile axes directly, skipping `sliding_window_view`
+  altogether and saving the full-res `lab_to_rgb` that upstream did before
+  the final NEAREST decimation.
 - `match_color`: upstream applies a wavelet color-fix cascade on the
-  full-res image. The math is invariant under constant per-tile shifts
-  because the downstream pixel-selection is order-preserving in L; we
-  decimate first and run color match on a 256x256 image with a Burt-Adelson
-  pyramid, dropping ~700 ms to ~5 ms.
+  full-res image. The pixel-selection in `find_pixel` is order-preserving
+  in L, and the cascade's deep low-pass is approximately constant within
+  an 8x8 tile, so applying the colorfix after decimation produces
+  near-identical output. Running it on a 256x256 small image with a
+  Burt-Adelson pyramid drops the stage from ~700 ms to a few ms.
 
 ### Algorithm-equivalence rewrites
 
-Several upstream stages had cheaper mathematical equivalents.
+A few upstream stages had cheaper equivalents (or near-equivalents that the
+later decimation makes indistinguishable).
 
-- The morphology smoothing pass was an `erode -> dilate -> erode` cascade with
-  a 5x5 cross kernel. With box-shaped kernels and equal iteration counts, the
-  result equals a single mean filter pass within rounding. The cross kernel
-  it actually uses is close enough that the visual diff is below ΔE76 of 1.
-- `outline_expansion` iterated a 3x3 kernel `N` times. Where the kernel is
-  separable into a single `(2N+1)` operation without changing the per-channel
-  semantics, the loop collapses into a single morphology call.
-- A redundant global LAB mean/std match in the original `match_color` was a
-  no-op once the wavelet step ran. Removing it cut a full LAB round-trip per
-  call.
+- `outline_expansion` iterated a 3x3 erode/dilate `N` times. The Minkowski
+  sum of an all-ones 3x3 kernel with itself `N` times is a flat
+  `(2N+1)x(2N+1)` rectangle, so the iteration loop collapses into a single
+  scipy morphology call. scipy detects flat-rectangle footprints and takes
+  the van Herk / Gil-Werman fast path (O(1) per pixel regardless of window
+  size).
+- The smoothing pass at the end of `outline_expansion` was upstream's
+  open-then-close on a 4-connected diamond, which removes sub-radius
+  bright/dark specks. The `patch_size` decimation that follows is at least
+  8x in practice, so those specks are sub-pixel in the eventual output. A
+  single uint8 `uniform_filter` at the diamond-equivalent radius produces
+  visually equivalent output for an order of magnitude less compute.
+- A redundant global LAB mean/std match in the original `match_color` was
+  a no-op once the wavelet step ran. Removing it cut a full LAB round-trip
+  per call (~680 ms on a 2k image) and slightly improved the port's ΔE76
+  vs upstream by removing an LAB-quantization round-trip.
 
 ### Smaller wins
 
-- `kmeans` assignment uses `scipy.cluster.vq.vq`, which is a small C kernel
-  faster than numpy broadcast for the typical centroid count.
-- k-means initialization uses k-means++ for stable convergence in fewer
-  iterations.
-- All random sources are seeded for reproducibility, which matters because
-  the harness diffs are meaningless otherwise.
+- `kmeans` assignment uses `scipy.cluster.vq.vq`, which evaluates the
+  BLAS-friendly `||p||^2 - 2 p.c + ||c||^2` expansion at the C level and
+  beats a numpy broadcast for the typical centroid count.
+- k-means initialization uses k-means++. ++ samples seeds proportional to
+  squared distance from the nearest already-chosen centroid, finding
+  lower-distortion clusterings without upstream's 4-attempt best-of-N
+  retry loop.
+- All random sources are seeded. The harness diffs are meaningless
+  otherwise.
 
 ### Reference benchmarks
 
 Numbers below are from `tests/harness/baseline.json`, captured on the test set
 at the harness defaults (`target_size=128, patch_size=8, thickness=3,
 colors=32`). Wall-clock is end-to-end pixelize time on a 768x768 to 1024x1024
-input.
+input. Mean RGB L1 is the per-channel mean absolute difference between the
+port's output and upstream's, in 0-255 byte units.
 
-| Cell | Wall-clock | Peak memory | Mean RGB L1 |
+Captured on a 6-core AMD Ryzen 5 5600X with 16 GB RAM under Linux. The
+pixelize path is single-threaded; scaling on faster or slower single-thread
+CPUs will be roughly proportional. Memory and L1 numbers are
+platform-independent.
+
+| Cell | Wall-clock | Peak memory | Mean RGB L1 vs upstream |
 |---|---|---|---|
 | `painterly_t128` | 0.56 s | 97 MiB | 6.3 |
 | `snow_leopard_t128` | 0.47 s | 97 MiB | 10.1 |
