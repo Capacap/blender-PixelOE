@@ -1,4 +1,4 @@
-# blender-pixeloe
+# blender-PixelOE
 
 A Blender addon that pixelizes images with [PixelOE](https://github.com/KohakuBlueleaf/PixelOE), a
 contrast-aware downscaling algorithm by Shih-Ying Yeh (KohakuBlueleaf). The
@@ -26,7 +26,7 @@ Full test suite comparisons: [docs/full_comparison.png](docs/full_comparison.png
 Pre-built zip (recommended):
 
 1. Download the `blender_pixeloe-<version>.zip` from the
-   [Releases](https://github.com/capacap/blender-pixeloe/releases) page.
+   [Releases](https://github.com/capacap/blender-PixelOE/releases) page.
 2. In Blender: `Edit > Preferences > Get Extensions`, click the dropdown
    in the top-right of the panel, choose `Install from Disk`, and pick the
    downloaded zip.

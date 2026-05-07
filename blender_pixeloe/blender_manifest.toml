@@ -7,7 +7,7 @@ tagline = "Pixelize images with the PixelOE algorithm"
 maintainer = "Simon Sorkin <simon.sorkin@outlook.com>"
 type = "add-on"
 
-website = "https://github.com/capacap/blender-pixeloe"
+website = "https://github.com/capacap/blender-PixelOE"
 
 tags = ["Image"]
 
