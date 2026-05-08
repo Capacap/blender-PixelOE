@@ -15,8 +15,10 @@ from blender_pixeloe.image_io import (
     _flat_linear_rgba_to_top_down_srgb_uint8,
     _flip_vertical,
     _float_to_uint8,
+    _linear_f32_to_srgb_u8,
     _linear_to_srgb,
     _srgb_to_linear,
+    _srgb_u8_to_linear_f32,
     _top_down_srgb_uint8_to_flat_linear_rgba,
     _uint8_to_float,
 )
@@ -105,6 +107,41 @@ def test_full_pipeline_preserves_shape_and_alpha(size):
     assert flat.shape == (h * w * 4,)
     rgba = flat.reshape(h, w, 4)
     np.testing.assert_array_equal(rgba[..., 3], 1.0)
+
+
+def test_srgb_u8_to_linear_lut_matches_analytic_exactly():
+    """The 256-entry uint8 sRGB -> linear float LUT is the analytic path
+    evaluated at every uint8 value; equality must be exact for every input."""
+    u8 = np.arange(256, dtype=np.uint8)
+    lut_path = _srgb_u8_to_linear_f32(u8)
+    analytic_path = _srgb_to_linear(_uint8_to_float(u8))
+    np.testing.assert_array_equal(lut_path, analytic_path)
+
+
+def test_linear_f32_to_srgb_u8_lut_matches_analytic_within_lsb():
+    """A 4096-entry LUT indexed by quantized float32 input may disagree with
+    the analytic path by at most 1 LSB on the uint8 output; that tolerance is
+    consistent with the existing round-trip drift bound."""
+    rng = np.random.default_rng(0)
+    arr = rng.random((1024, 1024), dtype=np.float32)
+    boundaries = np.array(
+        [-0.5, 0.0, 0.0031307, 0.0031308, 0.0031309, 0.5, 1.0, 1.5],
+        dtype=np.float32,
+    )
+    for inp in (arr, boundaries):
+        lut = _linear_f32_to_srgb_u8(inp)
+        analytic = _float_to_uint8(_linear_to_srgb(inp))
+        diff = np.abs(lut.astype(np.int16) - analytic.astype(np.int16))
+        assert diff.max() <= 1, f"max LSB drift {diff.max()} exceeds 1"
+
+
+def test_lut_full_pipeline_round_trip_through_uint8_is_lossless():
+    """Confirms the LUT-based forward and reverse paths together preserve
+    every uint8 input exactly, the property the operator depends on."""
+    rgb = np.arange(256, dtype=np.uint8).repeat(3).reshape(16, 16, 3)
+    flat = _top_down_srgb_uint8_to_flat_linear_rgba(rgb)
+    recovered = _flat_linear_rgba_to_top_down_srgb_uint8(flat, 16, 16)
+    np.testing.assert_array_equal(recovered, rgb)
 
 
 def test_full_pipeline_flips_vertically():

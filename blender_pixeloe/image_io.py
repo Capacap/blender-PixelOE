@@ -71,16 +71,54 @@ def _srgb_to_linear(arr: np.ndarray) -> np.ndarray:
     return out.astype(np.float32, copy=False)
 
 
+# LUT-based fast paths. The analytic transfers above are correct but slow on
+# 4k inputs because np.where evaluates both branches and np.power runs on
+# every pixel. With ~10M pixels per call, image_to_array becomes the dominant
+# cost in the operator wall-clock. The LUTs collapse each transfer to a
+# single integer indexing op.
+_LIN_TO_SRGB_U8_LUT_SIZE = 4096
+
+
+def _build_srgb_u8_to_linear_f32_lut() -> np.ndarray:
+    """One float32 entry per uint8 sRGB value. Exact, no precision loss."""
+    return _srgb_to_linear(_uint8_to_float(np.arange(256, dtype=np.uint8)))
+
+
+def _build_linear_f32_to_srgb_u8_lut(n: int) -> np.ndarray:
+    """N uint8 entries indexed by quantized float32 linear-light input. n=4096
+    gives at most 1 LSB difference from the analytic path; verified by test."""
+    x = np.linspace(0.0, 1.0, n, dtype=np.float32)
+    return _float_to_uint8(_linear_to_srgb(x))
+
+
+_SRGB_U8_TO_LINEAR_F32_LUT = _build_srgb_u8_to_linear_f32_lut()
+_LINEAR_F32_TO_SRGB_U8_LUT = _build_linear_f32_to_srgb_u8_lut(
+    _LIN_TO_SRGB_U8_LUT_SIZE
+)
+
+
+def _srgb_u8_to_linear_f32(arr_u8: np.ndarray) -> np.ndarray:
+    """Replaces `_uint8_to_float` + `_srgb_to_linear` with a 256-entry LUT lookup."""
+    return _SRGB_U8_TO_LINEAR_F32_LUT[arr_u8]
+
+
+def _linear_f32_to_srgb_u8(arr_f32: np.ndarray) -> np.ndarray:
+    """Replaces `_linear_to_srgb` + `_float_to_uint8` with a 4096-entry LUT lookup.
+    Clipping happens via the index range so out-of-[0,1] inputs are handled."""
+    n_minus_1 = _LIN_TO_SRGB_U8_LUT_SIZE - 1
+    idx = np.clip(arr_f32 * n_minus_1 + 0.5, 0.0, float(n_minus_1)).astype(np.intp)
+    return _LINEAR_F32_TO_SRGB_U8_LUT[idx]
+
+
 def _flat_linear_rgba_to_top_down_srgb_uint8(flat: np.ndarray, h: int, w: int) -> np.ndarray:
     rgba = flat.reshape(h, w, 4)
     rgb_linear = _drop_alpha(rgba)
-    rgb_srgb = _linear_to_srgb(rgb_linear)
-    return _float_to_uint8(_flip_vertical(rgb_srgb))
+    rgb_uint8 = _linear_f32_to_srgb_u8(rgb_linear)
+    return _flip_vertical(rgb_uint8)
 
 
 def _top_down_srgb_uint8_to_flat_linear_rgba(rgb_uint8: np.ndarray) -> np.ndarray:
-    rgb_srgb = _uint8_to_float(rgb_uint8)
-    rgb_linear = _srgb_to_linear(rgb_srgb)
+    rgb_linear = _srgb_u8_to_linear_f32(rgb_uint8)
     rgba = _add_alpha(rgb_linear, fill=1.0)
     bottom_up = _flip_vertical(rgba)
     return np.ascontiguousarray(bottom_up).reshape(-1)
