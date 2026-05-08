@@ -22,6 +22,13 @@ from .quantize import color_quant
 
 
 def _resize(rgb: np.ndarray, target_hw: tuple[int, int], resample: int) -> np.ndarray:
+    # Speed of this call is sensitive to the Pillow version. Blender 5.1
+    # ships Pillow 11.3 via system Python, which is roughly 2x slower per
+    # call than Pillow 12 for the bilinear downscales pixelize performs;
+    # accounts for ~150ms of operator wall-clock at default settings on a
+    # 4k input. Pinned in pyproject.toml to mirror Blender. scipy.ndimage.
+    # zoom was evaluated as a swap-in (tests/harness/bench_resize.py) and
+    # is significantly slower for the dominant modest-downscale case.
     h, w = target_hw
     return np.array(Image.fromarray(rgb).resize((w, h), resample))
 

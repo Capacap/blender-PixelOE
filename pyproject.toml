@@ -19,7 +19,10 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.24",
-    "Pillow>=10.0",
+    # Pinned to the version Blender 5.1 ships with so the dev environment
+    # mirrors the runtime PIL.Image.resize behavior; see the comment on
+    # `_resize` in blender_pixeloe/core/pixelize.py.
+    "Pillow==11.3.0",
     "scipy>=1.11",
 ]
 
