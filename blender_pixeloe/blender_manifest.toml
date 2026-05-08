@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blender_pixeloe"
-version = "0.1.0"
+version = "0.1.1"
 name = "PixelOE"
 tagline = "Pixelize images with the PixelOE algorithm"
 maintainer = "Simon Sorkin <simon.sorkin@outlook.com>"
