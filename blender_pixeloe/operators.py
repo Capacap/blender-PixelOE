@@ -1,6 +1,8 @@
 """PixelOE operator and the Scene PropertyGroup that backs the N-panel."""
 from __future__ import annotations
 
+import time
+from datetime import datetime
 from pathlib import PurePath
 
 import bpy
@@ -97,6 +99,14 @@ class PIXELOE_OT_pixelize_image(bpy.types.Operator):
 
         settings = context.scene.pixeloe
 
+        t_start = time.perf_counter()
+        src_w, src_h = src.size
+        print(
+            f"[{datetime.now().strftime('%H:%M:%S.%f')[:-3]}] "
+            f"PixelOE: pixelizing {src.name} ({src_w}x{src_h})",
+            flush=True,
+        )
+
         try:
             rgb = image_to_array(src)
         except (ValueError, RuntimeError) as exc:
@@ -135,6 +145,12 @@ class PIXELOE_OT_pixelize_image(bpy.types.Operator):
         )
 
         h, w = out_rgb.shape[:2]
+        elapsed = time.perf_counter() - t_start
+        print(
+            f"[{datetime.now().strftime('%H:%M:%S.%f')[:-3]}] "
+            f"PixelOE: done in {elapsed:.3f}s",
+            flush=True,
+        )
         self.report(
             {'INFO'},
             f"Pixelized {src.name} -> {out_image.name} ({w}x{h})",
